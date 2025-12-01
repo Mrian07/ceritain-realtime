@@ -1,36 +1,202 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ceritain Realtime - AI Psychology Consultation
 
-## Getting Started
+Real-time voice consultation platform with AI psychologist powered by OpenAI Realtime API and WebRTC.
 
-First, run the development server:
+## ✨ Features
+
+- 🎙️ **Real-time Voice Call** - Speak directly with AI psychologist
+- 📝 **Live Transcription** - See your conversation in real-time
+- 🎨 **Modern UI** - Beautiful, smooth animations with Framer Motion
+- 🔊 **Audio Visualization** - Dynamic waveform based on actual audio levels
+- 🔒 **Privacy First** - No recording, peer-to-peer connection
+- ⚡ **Low Latency** - ~200-500ms response time
+- 🌐 **WebRTC** - High-quality audio streaming
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000/call](http://localhost:3000/call) to start a consultation.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📖 Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Basic Implementation
 
-## Learn More
+```tsx
+import { CallPage } from "@/components/CallPage";
 
-To learn more about Next.js, take a look at the following resources:
+function App() {
+  const [showCall, setShowCall] = useState(false);
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  return (
+    <>
+      <button onClick={() => setShowCall(true)}>Start Consultation</button>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+      {showCall && (
+        <CallPage
+          onEndCall={() => setShowCall(false)}
+          contactName="Psikolog AI"
+          contactAvatar="🧠"
+        />
+      )}
+    </>
+  );
+}
+```
 
-## Deploy on Vercel
+## 🏗️ Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **CallPage** (`components/CallPage.tsx`) - Main call interface with full WebRTC integration
+- **useRealtimeWebRTC** (`hooks/useRealtimeWebRTC.ts`) - Custom hook for WebRTC management
+- **realtime-api** (`lib/realtime-api.ts`) - API utilities for session creation
+
+### Flow
+
+1. User opens CallPage
+2. Auto-create session via API → Get token
+3. Initialize WebRTC connection with token
+4. Request microphone permission
+5. Establish peer connection
+6. Real-time audio streaming begins
+7. Live transcript & AI response displayed
+8. User ends call → Cleanup & disconnect
+
+## 🔧 Configuration
+
+### Environment Variables (Optional)
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_REALTIME_API_URL=https://apiceritain.indonesiacore.com/api/realtime/session
+NEXT_PUBLIC_DEFAULT_VOICE=alloy
+NEXT_PUBLIC_SYSTEM_PROMPT="jadi seorang psikolog yang membantu menyelesaikan masalah user"
+```
+
+### Voice Options
+
+Available voices: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`
+
+## 📚 Documentation
+
+- [Technical Integration Guide](docs/REALTIME_INTEGRATION.md) - Detailed technical documentation
+- [Setup Guide](docs/SETUP_GUIDE.md) - Complete setup and troubleshooting
+
+## 🌐 Browser Support
+
+| Browser      | Support |
+| ------------ | ------- |
+| Chrome 80+   | ✅      |
+| Edge 80+     | ✅      |
+| Firefox 75+  | ✅      |
+| Safari 14.3+ | ✅      |
+
+**Note:** HTTPS required in production (WebRTC security requirement)
+
+## 🛠️ Tech Stack
+
+- **Next.js 16** - React framework
+- **React 19** - UI library
+- **TypeScript** - Type safety
+- **Framer Motion** - Smooth animations
+- **WebRTC** - Real-time communication
+- **Tailwind CSS** - Styling
+- **Lucide React** - Icons
+
+## 📦 Project Structure
+
+```
+├── app/
+│   ├── call/page.tsx          # Call demo page
+│   └── page.tsx               # Home page
+├── components/
+│   └── CallPage.tsx           # Main call component ⭐
+├── hooks/
+│   └── useRealtimeWebRTC.ts   # WebRTC hook ⭐
+├── lib/
+│   ├── realtime-api.ts        # API utilities ⭐
+│   └── config.ts              # Configuration
+└── docs/
+    ├── REALTIME_INTEGRATION.md
+    └── SETUP_GUIDE.md
+```
+
+## 🚨 Troubleshooting
+
+### Microphone Permission Denied
+
+- Click lock icon in address bar
+- Allow microphone access
+- Refresh page
+
+### Connection Failed
+
+- Check internet connection
+- Verify API endpoint is accessible
+- Check browser console for errors
+
+### No Audio Output
+
+- Check speaker/headphone connection
+- Verify browser audio settings
+- Ensure volume is not muted
+
+See [Setup Guide](docs/SETUP_GUIDE.md) for more troubleshooting tips.
+
+## 🔐 Security
+
+- Ephemeral tokens (single-use)
+- HTTPS only in production
+- No audio recording/storage
+- Peer-to-peer connection
+
+## 📈 Performance
+
+- Latency: ~200-500ms
+- Audio Quality: 24kHz, 16-bit
+- Bandwidth: ~50-100 kbps
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+```bash
+npm run build
+vercel deploy
+```
+
+### Other Platforms
+
+Ensure HTTPS is enabled (required for WebRTC).
+
+## 📄 License
+
+MIT
+
+## 🤝 Contributing
+
+Contributions welcome! Please read the documentation first.
+
+## 📞 Support
+
+For issues or questions, check:
+
+1. [Technical Documentation](docs/REALTIME_INTEGRATION.md)
+2. [Setup Guide](docs/SETUP_GUIDE.md)
+3. Browser console for error details

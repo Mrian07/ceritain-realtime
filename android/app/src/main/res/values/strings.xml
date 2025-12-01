@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ceritain</string>
+    <string name="title_activity_main">Ceritain</string>
+    <string name="package_name">com.ceritain.app</string>
+    <string name="custom_url_scheme">com.ceritain.app</string>
+</resources>
