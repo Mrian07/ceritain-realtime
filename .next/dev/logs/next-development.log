@@ -1,0 +1,10 @@
+[00:00:01.076] Server  LOG      ✓ Ready in 781ms
+[00:00:06.434] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:00:08.460] Browser LOG     Session created: {"expiresAt":1764578665,"sessionId":"sess_ChteTz9hcx6fyVzHzOfss"}
+[00:00:08.461] Browser LOG     Token received: ek_692d5311b7308191a67f0ed04a6f08cf
+[00:00:08.461] Browser LOG     Connecting WebRTC...
+[00:00:08.461] Browser ERROR   WebRTC connection error: {}
+[00:00:11.097] Browser LOG     Session created: {"expiresAt":1764578668,"sessionId":"sess_ChteWF1WEXNv3TfqIVmfO"}
+[00:00:11.097] Browser ERROR   WebRTC connection error: {}
+[00:00:13.097] Browser LOG     Session created: {"expiresAt":1764578670,"sessionId":"sess_ChteY64nxsuOTmfjnY2L9"}
+[00:00:13.097] Browser ERROR   WebRTC connection error: {}
