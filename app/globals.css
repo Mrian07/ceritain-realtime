@@ -3,6 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* AI Bubble - Abu keunguan soft */
+  --ai-bubble-bg: #e8e5f0;
+  --ai-bubble-text: #2d2640;
+
+  /* User Bubble - Biru elegan */
+  --user-bubble-bg: #3b82f6;
+  --user-bubble-text: #ffffff;
+
+  /* Header & UI */
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-border: rgba(0, 0, 0, 0.1);
+  --input-bg: rgba(249, 250, 251, 0.95);
+  --input-border: rgba(0, 0, 0, 0.1);
 }
 
 @theme inline {
@@ -16,11 +30,52 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+
+    /* AI Bubble - Abu keunguan soft (dark mode) */
+    --ai-bubble-bg: #2d2640;
+    --ai-bubble-text: #e8e5f0;
+
+    /* User Bubble - Biru elegan (dark mode) */
+    --user-bubble-bg: #2563eb;
+    --user-bubble-text: #ffffff;
+
+    /* Header & UI (dark mode) */
+    --header-bg: rgba(10, 10, 10, 0.8);
+    --header-border: rgba(255, 255, 255, 0.1);
+    --input-bg: rgba(23, 23, 23, 0.95);
+    --input-border: rgba(255, 255, 255, 0.1);
   }
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* AI Bubble - Abu keunguan soft (dark mode) */
+  --ai-bubble-bg: #2d2640;
+  --ai-bubble-text: #e8e5f0;
+
+  /* User Bubble - Biru elegan (dark mode) */
+  --user-bubble-bg: #2563eb;
+  --user-bubble-text: #ffffff;
+
+  /* Header & UI (dark mode) */
+  --header-bg: rgba(10, 10, 10, 0.8);
+  --header-border: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(23, 23, 23, 0.95);
+  --input-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
