@@ -276,30 +276,6 @@ export function CallPage({
                 {formatDuration(callDuration)}
               </motion.p>
             )}
-
-            {/* Transcript Display */}
-            {webrtcState.transcript && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6 max-w-md px-6 py-3 bg-white/10 backdrop-blur-md rounded-2xl"
-              >
-                <p className="text-sm text-white/60 mb-1">Anda:</p>
-                <p className="text-white">{webrtcState.transcript}</p>
-              </motion.div>
-            )}
-
-            {/* AI Response Display */}
-            {webrtcState.aiResponse && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-4 max-w-md px-6 py-3 bg-blue-500/20 backdrop-blur-md rounded-2xl border border-blue-400/30"
-              >
-                <p className="text-sm text-blue-300 mb-1">Psikolog AI:</p>
-                <p className="text-white">{webrtcState.aiResponse}</p>
-              </motion.div>
-            )}
           </motion.div>
         </div>
 
