@@ -47,6 +47,9 @@ export function CallPage({
 
         if (!mounted) return;
 
+        console.log("Token received:", token);
+        console.log("Connecting WebRTC...");
+
         // Connect WebRTC with token
         await webrtcActions.connect(token);
       } catch (error) {
@@ -95,6 +98,12 @@ export function CallPage({
     setShowError(false);
 
     try {
+      // Disconnect first
+      webrtcActions.disconnect();
+
+      // Wait a bit
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       const token = await createRealtimeSession({
         prompt:
           "jadi seorang psikolog yang membantu menyelesaikan masalah user",

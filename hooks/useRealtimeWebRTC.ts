@@ -60,111 +60,6 @@ export function useRealtimeWebRTC(): [
     checkLevel();
   }, []);
 
-  // Connect to WebRTC
-  const connect = useCallback(
-    async (token: string) => {
-      try {
-        setStatus("connecting");
-        setError(null);
-
-        // Get user media with fallback
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-
-        audioStreamRef.current = stream;
-
-        // Setup audio context for visualization
-        audioContextRef.current = new AudioContext();
-        analyserRef.current = audioContextRef.current.createAnalyser();
-        analyserRef.current.fftSize = 256;
-
-        const source = audioContextRef.current.createMediaStreamSource(stream);
-        source.connect(analyserRef.current);
-
-        monitorAudioLevel();
-
-        // Create peer connection
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        });
-
-        peerConnectionRef.current = pc;
-
-        // Add audio track
-        stream.getTracks().forEach((track) => {
-          pc.addTrack(track, stream);
-        });
-
-        // Handle incoming audio
-        pc.ontrack = (event) => {
-          const remoteAudio = new Audio();
-          remoteAudio.srcObject = event.streams[0];
-          remoteAudio.play().catch(console.error);
-        };
-
-        // Data channel for messages
-        const dataChannel = pc.createDataChannel("oai-events");
-        dataChannelRef.current = dataChannel;
-
-        dataChannel.onopen = () => {
-          console.log("Data channel opened");
-          setStatus("connected");
-        };
-
-        dataChannel.onmessage = (event) => {
-          try {
-            const message = JSON.parse(event.data);
-
-            // Handle different message types
-            if (message.type === "transcript") {
-              setTranscript(message.text || "");
-            } else if (message.type === "response") {
-              setAiResponse(message.text || "");
-            }
-          } catch (err) {
-            console.error("Failed to parse data channel message:", err);
-          }
-        };
-
-        dataChannel.onerror = (err) => {
-          console.error("Data channel error:", err);
-          setError("Data channel error occurred");
-        };
-
-        // Create and set local description
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
-        // Send offer to OpenAI Realtime API
-        const response = await fetch("https://api.openai.com/v1/realtime", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/sdp",
-          },
-          body: offer.sdp,
-        });
-
-        if (!response.ok) {
-          throw new Error(`WebRTC connection failed: ${response.status}`);
-        }
-
-        const answerSdp = await response.text();
-        await pc.setRemoteDescription({
-          type: "answer",
-          sdp: answerSdp,
-        });
-      } catch (err) {
-        console.error("WebRTC connection error:", err);
-        setStatus("error");
-        setError(err instanceof Error ? err.message : "Connection failed");
-        disconnect();
-      }
-    },
-    [monitorAudioLevel]
-  );
-
   // Disconnect
   const disconnect = useCallback(() => {
     // Stop animation frame
@@ -200,6 +95,135 @@ export function useRealtimeWebRTC(): [
     analyserRef.current = null;
     setStatus("disconnected");
   }, []);
+
+  // Connect to WebRTC
+  const connect = useCallback(
+    async (token: string) => {
+      try {
+        setStatus("connecting");
+        setError(null);
+
+        // Create peer connection
+        const pc = new RTCPeerConnection();
+        peerConnectionRef.current = pc;
+
+        // Handle incoming audio from model
+        pc.ontrack = (event) => {
+          const [stream] = event.streams;
+          const remoteAudio = new Audio();
+          remoteAudio.srcObject = stream;
+          remoteAudio.autoplay = true;
+          remoteAudio.play().catch(console.error);
+        };
+
+        // Get user media and add to peer connection
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        audioStreamRef.current = stream;
+
+        // Add mic tracks to peer connection
+        for (const track of stream.getTracks()) {
+          pc.addTrack(track, stream);
+        }
+
+        // Ensure we can receive audio from the model
+        pc.addTransceiver("audio", { direction: "recvonly" });
+
+        // Setup audio context for visualization
+        audioContextRef.current = new AudioContext();
+        analyserRef.current = audioContextRef.current.createAnalyser();
+        analyserRef.current.fftSize = 256;
+
+        const source = audioContextRef.current.createMediaStreamSource(stream);
+        source.connect(analyserRef.current);
+
+        monitorAudioLevel();
+
+        // Data channel for Realtime events
+        const dataChannel = pc.createDataChannel("oai-events");
+        dataChannelRef.current = dataChannel;
+
+        dataChannel.onopen = () => {
+          console.log("Data channel opened");
+          setStatus("connected");
+        };
+
+        dataChannel.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            console.log("Received event:", message.type, message);
+
+            // Handle different message types
+            if (message.type === "response.audio_transcript.done") {
+              setTranscript(message.transcript || "");
+            } else if (message.type === "response.done") {
+              const text =
+                message.response?.output?.[0]?.content?.[0]?.transcript;
+              if (text) setAiResponse(text);
+            }
+          } catch (err) {
+            console.error("Failed to parse data channel message:", err);
+          }
+        };
+
+        dataChannel.onerror = (err) => {
+          console.error("Data channel error:", err);
+          setError("Data channel error occurred");
+        };
+
+        // Create and set local description
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        // Send SDP offer to OpenAI Realtime WebRTC endpoint
+        console.log("Using token:", token.substring(0, 20) + "...");
+        const model = "gpt-realtime-mini-2025-10-06";
+        const sdpResp = await fetch(
+          `https://api.openai.com/v1/realtime?model=${encodeURIComponent(
+            model
+          )}`,
+          {
+            method: "POST",
+            body: offer.sdp,
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/sdp",
+              "OpenAI-Beta": "realtime=v1",
+            },
+          }
+        );
+
+        if (!sdpResp.ok) {
+          const t = await sdpResp.text();
+          console.error("SDP Response Error:", t);
+          throw new Error(`SDP failed: ${sdpResp.status} ${t}`);
+        }
+
+        const answerSDP = await sdpResp.text();
+        console.log("Received SDP answer:", answerSDP.substring(0, 200));
+
+        await pc.setRemoteDescription({ type: "answer", sdp: answerSDP });
+        console.log("Remote description set successfully");
+      } catch (err) {
+        console.error("WebRTC connection error:", err);
+        const errorObj = err as unknown;
+        // console.error("Error details:", {
+        //   name: errorObj?.name,
+        //   message: errorObj?.message,
+        //   stack: errorObj?.stack,
+        // });
+        setStatus("error");
+        setError(
+          err instanceof Error
+            ? err.message
+            : `Connection failed: ${JSON.stringify(err)}`
+        );
+        disconnect();
+      }
+    },
+    [disconnect, monitorAudioLevel]
+  );
 
   // Toggle mute
   const toggleMute = useCallback(() => {

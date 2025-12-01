@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { MessageCircle, Loader2 } from 'lucide-react';
-import { HeaderBar } from './HeaderBar';
-import { ChatBubble } from './ChatBubble';
-import { InputBar } from './InputBar';
-import { CallPage } from './CallPage';
-import { useChat } from '@/hooks/useChat';
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { MessageCircle, Loader2 } from "lucide-react";
+import { HeaderBar } from "./HeaderBar";
+import { ChatBubble } from "./ChatBubble";
+import { InputBar } from "./InputBar";
+import { CallPage } from "./CallPage";
+import { useChat } from "@/hooks/useChat";
 
 export function ChatPage() {
   const { messages, isTyping, sendMessage } = useChat();
@@ -19,7 +19,7 @@ export function ChatPage() {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTo({
         top: chatContainerRef.current.scrollHeight,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [messages, isTyping]);
@@ -44,7 +44,8 @@ export function ChatPage() {
             ref={chatContainerRef}
             className="flex-1 overflow-y-auto px-4 py-6 pb-24"
             style={{
-              background: 'linear-gradient(to bottom, var(--background), var(--surface))',
+              background:
+                "linear-gradient(to bottom, var(--background), var(--surface))",
             }}
           >
             <div className="max-w-4xl mx-auto">
@@ -59,23 +60,23 @@ export function ChatPage() {
                   <div
                     className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-lg"
                     style={{
-                      backgroundColor: 'var(--surface-elevated)',
+                      backgroundColor: "var(--surface-elevated)",
                     }}
                   >
                     <MessageCircle
                       className="w-10 h-10"
-                      style={{ color: 'var(--accent)' }}
+                      style={{ color: "var(--accent)" }}
                     />
                   </div>
                   <h2
                     className="text-2xl font-semibold mb-2 tracking-tight"
-                    style={{ color: 'var(--foreground)' }}
+                    style={{ color: "var(--foreground)" }}
                   >
-                    Start a Conversation
+                    Start a Conversation AI
                   </h2>
                   <p
                     className="text-sm max-w-md"
-                    style={{ color: 'var(--foreground-secondary)' }}
+                    style={{ color: "var(--foreground-secondary)" }}
                   >
                     Send a message to begin chatting with AI Assistant
                   </p>
@@ -98,8 +99,8 @@ export function ChatPage() {
                   <div
                     className="max-w-[75%] rounded-2xl rounded-bl-md px-4 py-3 shadow-sm flex items-center gap-2"
                     style={{
-                      backgroundColor: 'var(--ai-bubble-bg)',
-                      color: 'var(--ai-bubble-text)',
+                      backgroundColor: "var(--ai-bubble-bg)",
+                      color: "var(--ai-bubble-text)",
                     }}
                   >
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -117,10 +118,7 @@ export function ChatPage() {
       {/* Call Interface */}
       <AnimatePresence>
         {isCallActive && (
-          <CallPage
-            onEndCall={handleEndCall}
-            contactName="AI Assistant"
-          />
+          <CallPage onEndCall={handleEndCall} contactName="AI Assistant" />
         )}
       </AnimatePresence>
     </>
