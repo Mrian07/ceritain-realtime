@@ -29,14 +29,47 @@ export function CallPage({
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const [showError, setShowError] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [micPermission, setMicPermission] = useState<
+    "prompt" | "granted" | "denied"
+  >("prompt");
+  const [showMicPrompt, setShowMicPrompt] = useState(false);
 
   const [webrtcState, webrtcActions] = useRealtimeWebRTC();
+
+  // Check microphone permission first
+  useEffect(() => {
+    const checkMicPermission = async () => {
+      try {
+        const result = await navigator.permissions.query({
+          name: "microphone" as PermissionName,
+        });
+
+        if (result.state === "granted") {
+          setMicPermission("granted");
+        } else if (result.state === "denied") {
+          setMicPermission("denied");
+          setShowError(true);
+        } else {
+          setMicPermission("prompt");
+          setShowMicPrompt(true);
+        }
+      } catch (error) {
+        // Fallback: just show prompt
+        setShowMicPrompt(true);
+      }
+    };
+
+    checkMicPermission();
+  }, []);
 
   // Initialize session and connect
   useEffect(() => {
     let mounted = true;
 
     const initializeCall = async () => {
+      // Wait for mic permission
+      if (micPermission !== "granted") return;
+
       try {
         // Create session and get token
         const token = await createRealtimeSession({
@@ -67,7 +100,7 @@ export function CallPage({
       webrtcActions.disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [micPermission]);
 
   // Call duration timer
   useEffect(() => {
@@ -91,6 +124,22 @@ export function CallPage({
   const handleEndCall = () => {
     webrtcActions.disconnect();
     onEndCall();
+  };
+
+  const handleAllowMicrophone = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop()); // Stop immediately
+
+      setMicPermission("granted");
+      setShowMicPrompt(false);
+    } catch (error) {
+      console.error("Microphone permission denied:", error);
+      setMicPermission("denied");
+      setShowMicPrompt(false);
+      setShowError(true);
+    }
   };
 
   const handleRetry = async () => {
@@ -347,6 +396,62 @@ export function CallPage({
         </div>
       )}
 
+      {/* Microphone Permission Prompt */}
+      <AnimatePresence>
+        {showMicPrompt && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-10"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-slate-800 rounded-3xl p-8 max-w-md w-full shadow-2xl border border-blue-500/20"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Mic className="w-6 h-6 text-blue-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">
+                  Izin Mikrofon Diperlukan
+                </h3>
+              </div>
+
+              <p className="text-white/70 mb-6">
+                Aplikasi memerlukan akses ke mikrofon Anda untuk melakukan
+                panggilan suara dengan AI Psikolog.
+              </p>
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleAllowMicrophone}
+                  className="flex-1 py-3 rounded-xl bg-blue-500 hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
+                >
+                  <Mic className="w-5 h-5 text-white" />
+                  <span className="text-white font-medium">
+                    Izinkan Mikrofon
+                  </span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleEndCall}
+                  className="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all"
+                >
+                  <span className="text-white font-medium">Batal</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Error Modal */}
       <AnimatePresence>
         {(showError || webrtcState.error) && (
@@ -372,8 +477,10 @@ export function CallPage({
               </div>
 
               <p className="text-white/70 mb-6">
-                {webrtcState.error ||
-                  "Tidak dapat terhubung ke server. Silakan coba lagi."}
+                {micPermission === "denied"
+                  ? "Akses mikrofon ditolak. Silakan aktifkan izin mikrofon di pengaturan browser Anda."
+                  : webrtcState.error ||
+                    "Tidak dapat terhubung ke server. Silakan coba lagi."}
               </p>
 
               <div className="flex gap-3">
